@@ -1,0 +1,13 @@
+etc:
+  profile:
+    file:
+      path: /etc/profile
+
+vim:
+  rc:
+    file:
+      path: /etc/vim/vimrc
+  rc_ext:
+    dist:
+      file:
+        path: /etc/vim/vimrc.local
