@@ -4,6 +4,6 @@
     - vim
     - ntp_client
     - timezone
-    - locale_japanese
+    - locale
     - tmux
-    - iptables-http-https
+    - iptables

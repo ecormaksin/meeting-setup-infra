@@ -1,0 +1,6 @@
+timesyncd:
+  file:
+    path: /etc/systemd/timesyncd.conf
+
+ntp:
+  server: ntp.nict.jp

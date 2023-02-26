@@ -1,0 +1,14 @@
+- name: "Install tmux | install packages"
+  become: yes
+  ignore_errors: "{{ ansible_check_mode }}"
+  apt:
+    pkg:
+      - tmux
+      - xsel
+    update_cache: yes
+
+- name: "Install tmux | copy setting file"
+  ignore_errors: "{{ ansible_check_mode }}"
+  copy:
+    src: .tmux.conf
+    dest: "~/.tmux.conf"

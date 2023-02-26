@@ -1,0 +1,5 @@
+- name: "Set timezone to Ubuntu"
+  become: yes
+  ignore_errors: "{{ ansible_check_mode }}"
+  timezone:
+    name: "{{ timezone.name }}"
