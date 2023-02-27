@@ -1,14 +1,14 @@
 - name: "update, upgrade, autoremove Ubuntu | update packages"
   become: yes
-  apt:
+  ansible.builtin.apt:
     update_cache: yes
 
 - name: "update, upgrade, autoremove Ubuntu | upgrade packages"
   become: yes
-  apt:
+  ansible.builtin.apt:
     upgrade: dist
 
 - name: "update, upgrade, autoremove Ubuntu | autoremove packages"
   become: yes
-  apt:
+  ansible.builtin.apt:
     autoremove: yes

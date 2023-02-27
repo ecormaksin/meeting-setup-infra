@@ -7,3 +7,5 @@
     - locale
     - tmux
     - iptables
+    - nginx
+    - cerbot

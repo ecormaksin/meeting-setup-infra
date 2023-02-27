@@ -1,7 +1,7 @@
 - name: "Set NTP Server to Ubuntu | change timesyncd.conf"
   become: yes
   ignore_errors: "{{ ansible_check_mode }}"
-  shell:
+  ansible.builtin.shell:
     cmd: |
       cat "{{ timesyncd.file.path }}" | grep "NTP={{ ntp.server }}" >/dev/null
       if [ $? -eq 0 ]; then

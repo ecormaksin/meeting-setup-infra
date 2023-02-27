@@ -8,3 +8,5 @@ all:
   vars:
     ansible_user: <ansible_user> # Ansibleを実行する時の一般ユーザーを指定する
     ansible_ssh_private_key_file: <ansible_ssh_private_key_file> # Ansible実行対象のホストへ接続する時の秘密鍵のパスを指定する
+    certbot_domain: <Comma-separated list of domains to obtain a certificate for> # https://eff-certbot.readthedocs.io/en/stable/using.html
+    certbot_email_address: <Email address for important account notifications for cerbot> # https://eff-certbot.readthedocs.io/en/stable/using.html

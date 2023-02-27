@@ -1,7 +1,7 @@
 - name: "Install Vim to Ubuntu | install package"
   become: yes
   ignore_errors: "{{ ansible_check_mode }}"
-  apt:
+  ansible.builtin.apt:
     update_cache: yes
     name: vim
     state: present
@@ -10,7 +10,7 @@
 - name: "Install Vim to Ubuntu | call vim instead of vi"
   become: yes
   ignore_errors: "{{ ansible_check_mode }}"
-  shell:
+  ansible.builtin.shell:
     cmd: |
       cat "{{ etc.profile.file.path }}" | grep "alias vi='vim'" >/dev/null
       if [ $? -eq 0 ]; then

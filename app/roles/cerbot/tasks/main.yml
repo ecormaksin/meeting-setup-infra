@@ -1,0 +1,41 @@
+- name: "cerbot | Install snapd"
+  become: yes
+  ignore_errors: "{{ ansible_check_mode }}"
+  ansible.builtin.apt:
+    pkg:
+      - snapd
+    update_cache: yes
+
+- name: "cerbot | Ensure that your version of snapd is up to date"
+  become: yes
+  ignore_errors: "{{ ansible_check_mode }}"
+  ansible.builtin.shell: snap install core; snap refresh core
+
+- name: "cerbot | Remove certbot-auto and any Certbot OS packages"
+  become: yes
+  ignore_errors: "{{ ansible_check_mode }}"
+  ansible.builtin.apt:
+    pkg:
+      - certbot
+    state: absent
+
+- name: "cerbot | Install Certbot"
+  become: yes
+  ignore_errors: "{{ ansible_check_mode }}"
+  community.general.snap:
+    name: certbot
+    classic: true
+
+- name: "cerbot | Prepare the Certbot command"
+  become: yes
+  ignore_errors: "{{ ansible_check_mode }}"
+  ansible.builtin.file:
+    src: /snap/bin/certbot
+    dest: /usr/bin/certbot
+    state: link
+    force: true
+
+- name: "cerbot | Get and install certificates"
+  become: yes
+  ignore_errors: "{{ ansible_check_mode }}"
+  ansible.builtin.shell: certbot --nginx --noninteractive --agree-tos -m "{{ certbot_email_address }}" -d "{{ certbot_domain }}"

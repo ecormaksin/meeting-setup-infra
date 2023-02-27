@@ -1,7 +1,7 @@
 - name: "Install tmux | install packages"
   become: yes
   ignore_errors: "{{ ansible_check_mode }}"
-  apt:
+  ansible.builtin.apt:
     pkg:
       - tmux
       - xsel
