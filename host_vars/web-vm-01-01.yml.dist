@@ -1,0 +1,3 @@
+ansible_host: <WebサーバーのIPアドレス>
+certbot_domain: <SSL証明書を適用するcerbot設定時のドメイン>
+certbot_email_address: <cerbot設定時のドメイン管理者メールアドレス>

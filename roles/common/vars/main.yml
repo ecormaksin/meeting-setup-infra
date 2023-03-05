@@ -11,3 +11,13 @@ vim:
     dist:
       file:
         path: /etc/vim/vimrc.local
+
+timesyncd:
+  file:
+    path: /etc/systemd/timesyncd.conf
+
+ntp:
+  server: ntp.nict.jp
+
+timezone:
+  name: Asia/Tokyo

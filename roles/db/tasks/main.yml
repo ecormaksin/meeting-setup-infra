@@ -1,0 +1,30 @@
+- name: "db: iptables | list iptables"
+  become: yes
+  ignore_errors: "{{ ansible_check_mode }}"
+  command: iptables -L
+  register: iptables_result
+
+- name: "db: iptables | allow postgresql port"
+  become: yes
+  ignore_errors: "{{ ansible_check_mode }}"
+  ansible.builtin.shell:
+    cmd: |
+      iptables -I INPUT 6 -p tcp -m tcp --dport postgresql -j ACCEPT
+      netfilter-persistent save
+  when: iptables_result.stdout.find('tcp dpt:postgresql') == -1
+
+- name: "db: postgresql | install packages"
+  become: yes
+  ignore_errors: "{{ ansible_check_mode }}"
+  ansible.builtin.apt:
+    pkg:
+      - postgresql
+    update_cache: yes
+
+- name: "db: postgresql | start service"
+  become: yes
+  ignore_errors: "{{ ansible_check_mode }}"
+  systemd:
+    name: postgresql
+    enabled: yes
+    state: started

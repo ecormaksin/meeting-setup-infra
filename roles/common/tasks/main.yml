@@ -1,0 +1,103 @@
+- name: "common: apt | update packages"
+  become: yes
+  ansible.builtin.apt:
+    update_cache: yes
+
+- name: "common: apt | upgrade packages"
+  become: yes
+  ansible.builtin.apt:
+    upgrade: dist
+
+- name: "common: apt | autoremove packages"
+  become: yes
+  ansible.builtin.apt:
+    autoremove: yes
+
+- name: "common: vim | install package"
+  become: yes
+  ignore_errors: "{{ ansible_check_mode }}"
+  ansible.builtin.apt:
+    update_cache: yes
+    name: vim
+    state: present
+    autoremove: yes
+
+- name: "common: vim | call vim instead of vi"
+  become: yes
+  ignore_errors: "{{ ansible_check_mode }}"
+  ansible.builtin.shell:
+    cmd: |
+      cat "{{ etc.profile.file.path }}" | grep "alias vi='vim'" >/dev/null
+      if [ $? -eq 0 ]; then
+        echo "already changed."
+      else
+        echo "" >> "{{ etc.profile.file.path }}"
+        echo "alias vi='vim'" >> "{{ etc.profile.file.path }}"
+        . "{{ etc.profile.file.path }}"
+      fi
+
+- name: "common: vim | copy file to customise vim settings"
+  become: yes
+  ignore_errors: "{{ ansible_check_mode }}"
+  copy:
+    src: vimrc
+    dest: "{{ vim.rc_ext.dist.file.path }}"
+
+- name: "common: ntp | change timesyncd.conf"
+  become: yes
+  ignore_errors: "{{ ansible_check_mode }}"
+  ansible.builtin.shell:
+    cmd: |
+      cat "{{ timesyncd.file.path }}" | grep "NTP={{ ntp.server }}" >/dev/null
+      if [ $? -eq 0 ]; then
+        echo "already changed."
+      else
+        sed -i -e "s/#NTP=/NTP={{ ntp.server }}/g" "{{ timesyncd.file.path }}"
+      fi
+
+- name: "common: ntp | restart systemd-timesyncd"
+  become: yes
+  ignore_errors: "{{ ansible_check_mode }}"
+  systemd:
+    name: systemd-timesyncd
+    state: restarted
+
+- name: "common: timezone | Set timezone"
+  become: yes
+  ignore_errors: "{{ ansible_check_mode }}"
+  timezone:
+    name: "{{ timezone.name }}"
+
+- name: "common: locale | Install package"
+  become: yes
+  ignore_errors: "{{ ansible_check_mode }}"
+  ansible.builtin.apt:
+    name: language-pack-ja
+    update_cache: yes
+
+- name: "common: locale | Check locale"
+  become: yes
+  ignore_errors: "{{ ansible_check_mode }}"
+  command: cat /etc/default/locale
+  register: cat_locale_result
+
+- name: "common: locale | Set locale japanese"
+  become: yes
+  ignore_errors: "{{ ansible_check_mode }}"
+  command: update-locale LANG=ja_JP.UTF-8
+  when: cat_locale_result.stdout != 'LANG=ja_JP.UTF-8'
+
+- name: "common: tmux | install packages"
+  become: yes
+  ignore_errors: "{{ ansible_check_mode }}"
+  ansible.builtin.apt:
+    pkg:
+      - tmux
+      - xsel
+    update_cache: yes
+
+- name: "common: tmux | copy setting file"
+  ignore_errors: "{{ ansible_check_mode }}"
+  copy:
+    src: .tmux.conf
+    dest: "~/.tmux.conf"

@@ -1,0 +1,73 @@
+- name: "web: iptables | list iptables"
+  become: yes
+  ignore_errors: "{{ ansible_check_mode }}"
+  command: iptables -L
+  register: iptables_result
+
+- name: "web: iptables | allow http, https"
+  become: yes
+  ignore_errors: "{{ ansible_check_mode }}"
+  ansible.builtin.shell:
+    cmd: |
+      iptables -I INPUT 6 -p tcp -m tcp --dport https -j ACCEPT
+      iptables -I INPUT 6 -p tcp -m tcp --dport http -j ACCEPT
+      netfilter-persistent save
+  when: iptables_result.stdout.find('tcp dpt:https') == -1
+
+- name: "web: nginx | install packages"
+  become: yes
+  ignore_errors: "{{ ansible_check_mode }}"
+  ansible.builtin.apt:
+    pkg:
+      - nginx
+    update_cache: yes
+
+- name: "web: nginx | start service"
+  become: yes
+  ignore_errors: "{{ ansible_check_mode }}"
+  systemd:
+    name: nginx
+    enabled: yes
+    state: started
+
+- name: "web: cerbot | Install snapd"
+  become: yes
+  ignore_errors: "{{ ansible_check_mode }}"
+  ansible.builtin.apt:
+    pkg:
+      - snapd
+    update_cache: yes
+
+- name: "web: cerbot | Ensure that your version of snapd is up to date"
+  become: yes
+  ignore_errors: "{{ ansible_check_mode }}"
+  ansible.builtin.shell: snap install core; snap refresh core
+
+- name: "web: cerbot | Remove certbot-auto and any Certbot OS packages"
+  become: yes
+  ignore_errors: "{{ ansible_check_mode }}"
+  ansible.builtin.apt:
+    pkg:
+      - certbot
+    state: absent
+
+- name: "web: cerbot | Install Certbot"
+  become: yes
+  ignore_errors: "{{ ansible_check_mode }}"
+  community.general.snap:
+    name: certbot
+    classic: true
+
+- name: "web: cerbot | Prepare the Certbot command"
+  become: yes
+  ignore_errors: "{{ ansible_check_mode }}"
+  ansible.builtin.file:
+    src: /snap/bin/certbot
+    dest: /usr/bin/certbot
+    state: link
+    force: true
+
+- name: "web: cerbot | Get and install certificates"
+  become: yes
+  ignore_errors: "{{ ansible_check_mode }}"
+  ansible.builtin.shell: certbot --nginx --noninteractive --agree-tos -m "{{ certbot_email_address }}" -d "{{ certbot_domain }}"
