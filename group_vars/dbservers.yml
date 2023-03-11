@@ -1,1 +1,2 @@
 postgresql_conf_path: /etc/postgresql/14/main/postgresql.conf
+pg_hba_conf_path: /etc/postgresql/14/main/pg_hba.conf

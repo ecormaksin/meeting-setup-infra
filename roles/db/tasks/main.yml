@@ -33,10 +33,17 @@
   become: true
   ignore_errors: "{{ ansible_check_mode }}"
   ansible.builtin.replace:
-    path: {{ postgresql_conf_path }}
+    path: "{{ postgresql_conf_path }}"
     regexp: '^(#listen_addresses = .*)$'
     replace: '\1\nlisten_addresses = ''*'''
   when: cat_postgresql_conf.rc != 0
+
+- name: "db: postgresql | allow ip v4 local connections"
+  ansible.builtin.include_tasks:
+    file: ./roles/db/tasks/allow_ip_v4_local_connections.yml
+  vars:
+    target_ip_address: "{{ item }}"
+  with_items: "{{ postgresql_permitted_ip_addresses }}"
 
 - name: "db: postgresql | start service"
   become: yes

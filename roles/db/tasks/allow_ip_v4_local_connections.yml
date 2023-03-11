@@ -1,0 +1,17 @@
+- block:
+  - name: "db: postgresql | check permitted address"
+    become: true
+    ignore_errors: true
+    ansible.builtin.shell:
+      cmd: |
+        cat {{ pg_hba_conf_path }} | grep -E "host\s+all\s+all\s+{{ target_ip_address | regex_replace('\.','\.') }}/32\s+trust"
+    register: cat_pg_hba_conf
+
+  - name: "db: postgresql | add permitted address"
+    become: true
+    ignore_errors: "{{ ansible_check_mode }}"
+    ansible.builtin.replace:
+      path: "{{ pg_hba_conf_path }}"
+      regexp: '^(host\s+all\s+all\s+127\.0\.0\.1/32\s+scram-sha-256)$'
+      replace: '\1\nhost all all {{ target_ip_address }}/32 trust'
+    when: cat_pg_hba_conf.rc != 0
