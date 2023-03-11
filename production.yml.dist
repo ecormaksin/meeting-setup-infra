@@ -3,10 +3,10 @@ all:
   children:
     webservers:
       hosts:
-        web-vm-01-01:
+        web-01:
     dbservers:
       hosts:
-        db-vm-01-02:
+        db-01:
   vars:
     ansible_user: <Ansible Playbookを実行する時のユーザー>
     ansible_become_pass: <上記ユーザーで管理者権限の必要なコマンドを実行する時のパスワード>

@@ -21,6 +21,23 @@
       - postgresql
     update_cache: yes
 
+- name: "db: postgresql | check listen address"
+  become: true
+  ignore_errors: true
+  ansible.builtin.shell:
+    cmd: |
+      cat {{ postgresql_conf_path }} | grep -E "listen_addresses = '\*'"
+  register: cat_postgresql_conf
+
+- name: "db: postgresql | change listen address"
+  become: true
+  ignore_errors: "{{ ansible_check_mode }}"
+  ansible.builtin.replace:
+    path: {{ postgresql_conf_path }}
+    regexp: '^(#listen_addresses = .*)$'
+    replace: '\1\nlisten_addresses = ''*'''
+  when: cat_postgresql_conf.rc != 0
+
 - name: "db: postgresql | start service"
   become: yes
   ignore_errors: "{{ ansible_check_mode }}"

@@ -1,4 +1,4 @@
 app/inventory/target.yml
 production.yml
-host_vars/db-vm-01-02.yml
-host_vars/web-vm-01-01.yml
+host_vars/db-01.yml
+host_vars/web-01.yml
