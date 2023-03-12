@@ -21,22 +21,14 @@
       - postgresql
     update_cache: yes
 
-- name: "db: postgresql | check listen address"
-  become: true
-  ignore_errors: true
-  ansible.builtin.shell:
-    cmd: |
-      cat {{ postgresql_conf_path }} | grep -E "listen_addresses = '\*'"
-  register: cat_postgresql_conf
-
 - name: "db: postgresql | change listen address"
   become: true
   ignore_errors: "{{ ansible_check_mode }}"
-  ansible.builtin.replace:
+  ansible.builtin.lineinfile:
     path: "{{ postgresql_conf_path }}"
-    regexp: '^(#listen_addresses = .*)$'
-    replace: '\1\nlisten_addresses = ''*'''
-  when: cat_postgresql_conf.rc != 0
+    regexp: '^listen_addresses = ''\*''$'
+    insertafter: '^#listen_addresses = ''localhost''.*$'
+    line: 'listen_addresses = ''*'''
 
 - name: "db: postgresql | allow ip v4 local connections"
   ansible.builtin.include_tasks:
