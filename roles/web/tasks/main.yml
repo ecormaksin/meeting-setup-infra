@@ -1,11 +1,11 @@
 - name: "web: iptables | list iptables"
-  become: yes
+  become: true
   ignore_errors: "{{ ansible_check_mode }}"
   command: iptables -L
   register: iptables_result
 
 - name: "web: iptables | allow http, https"
-  become: yes
+  become: true
   ignore_errors: "{{ ansible_check_mode }}"
   ansible.builtin.shell:
     cmd: |
@@ -15,7 +15,7 @@
   when: iptables_result.stdout.find('tcp dpt:https') == -1
 
 - name: "web: nginx | install packages"
-  become: yes
+  become: true
   ignore_errors: "{{ ansible_check_mode }}"
   ansible.builtin.apt:
     pkg:
@@ -23,15 +23,15 @@
     update_cache: yes
 
 - name: "web: nginx | start service"
-  become: yes
+  become: true
   ignore_errors: "{{ ansible_check_mode }}"
-  systemd:
+  ansible.builtin.systemd:
     name: nginx
-    enabled: yes
+    enabled: true
     state: started
 
 - name: "web: cerbot | Install snapd"
-  become: yes
+  become: true
   ignore_errors: "{{ ansible_check_mode }}"
   ansible.builtin.apt:
     pkg:
@@ -39,12 +39,12 @@
     update_cache: yes
 
 - name: "web: cerbot | Ensure that your version of snapd is up to date"
-  become: yes
+  become: true
   ignore_errors: "{{ ansible_check_mode }}"
   ansible.builtin.shell: snap install core; snap refresh core
 
 - name: "web: cerbot | Remove certbot-auto and any Certbot OS packages"
-  become: yes
+  become: true
   ignore_errors: "{{ ansible_check_mode }}"
   ansible.builtin.apt:
     pkg:
@@ -52,14 +52,14 @@
     state: absent
 
 - name: "web: cerbot | Install Certbot"
-  become: yes
+  become: true
   ignore_errors: "{{ ansible_check_mode }}"
   community.general.snap:
     name: certbot
     classic: true
 
 - name: "web: cerbot | Prepare the Certbot command"
-  become: yes
+  become: true
   ignore_errors: "{{ ansible_check_mode }}"
   ansible.builtin.file:
     src: /snap/bin/certbot
@@ -68,6 +68,6 @@
     force: true
 
 - name: "web: cerbot | Get and install certificates"
-  become: yes
+  become: true
   ignore_errors: "{{ ansible_check_mode }}"
   ansible.builtin.shell: certbot --nginx --noninteractive --agree-tos -m "{{ certbot_email_address }}" -d "{{ certbot_domain }}"

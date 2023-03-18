@@ -1,20 +1,20 @@
 - name: "common: apt | update packages"
-  become: yes
+  become: true
   ansible.builtin.apt:
     update_cache: yes
 
 - name: "common: apt | upgrade packages"
-  become: yes
+  become: true
   ansible.builtin.apt:
     upgrade: dist
 
 - name: "common: apt | autoremove packages"
-  become: yes
+  become: true
   ansible.builtin.apt:
     autoremove: yes
 
 - name: "common: vim | install package"
-  become: yes
+  become: true
   ignore_errors: "{{ ansible_check_mode }}"
   ansible.builtin.apt:
     update_cache: yes
@@ -23,7 +23,7 @@
     autoremove: yes
 
 - name: "common: vim | call vim instead of vi"
-  become: yes
+  become: true
   ignore_errors: "{{ ansible_check_mode }}"
   ansible.builtin.shell:
     cmd: |
@@ -37,14 +37,14 @@
       fi
 
 - name: "common: vim | copy file to customise vim settings"
-  become: yes
+  become: true
   ignore_errors: "{{ ansible_check_mode }}"
   copy:
     src: vimrc
     dest: "{{ vim.rc_ext.dist.file.path }}"
 
 - name: "common: ntp | change timesyncd.conf"
-  become: yes
+  become: true
   ignore_errors: "{{ ansible_check_mode }}"
   ansible.builtin.shell:
     cmd: |
@@ -56,39 +56,39 @@
       fi
 
 - name: "common: ntp | restart systemd-timesyncd"
-  become: yes
+  become: true
   ignore_errors: "{{ ansible_check_mode }}"
-  systemd:
+  ansible.builtin.systemd:
     name: systemd-timesyncd
     state: restarted
 
 - name: "common: timezone | Set timezone"
-  become: yes
+  become: true
   ignore_errors: "{{ ansible_check_mode }}"
   timezone:
     name: "{{ timezone.name }}"
 
 - name: "common: locale | Install package"
-  become: yes
+  become: true
   ignore_errors: "{{ ansible_check_mode }}"
   ansible.builtin.apt:
     name: language-pack-ja
     update_cache: yes
 
 - name: "common: locale | Check locale"
-  become: yes
+  become: true
   ignore_errors: "{{ ansible_check_mode }}"
   command: cat /etc/default/locale
   register: cat_locale_result
 
 - name: "common: locale | Set locale japanese"
-  become: yes
+  become: true
   ignore_errors: "{{ ansible_check_mode }}"
   command: update-locale LANG=ja_JP.UTF-8
   when: cat_locale_result.stdout != 'LANG=ja_JP.UTF-8'
 
 - name: "common: tmux | install packages"
-  become: yes
+  become: true
   ignore_errors: "{{ ansible_check_mode }}"
   ansible.builtin.apt:
     pkg:

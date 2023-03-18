@@ -1,11 +1,11 @@
 - name: "db: iptables | list iptables"
-  become: yes
+  become: true
   ignore_errors: "{{ ansible_check_mode }}"
   command: iptables -L
   register: iptables_result
 
 - name: "db: iptables | allow postgresql port"
-  become: yes
+  become: true
   ignore_errors: "{{ ansible_check_mode }}"
   ansible.builtin.shell:
     cmd: |
@@ -14,11 +14,12 @@
   when: iptables_result.stdout.find('tcp dpt:postgresql') == -1
 
 - name: "db: postgresql | install packages"
-  become: yes
+  become: true
   ignore_errors: "{{ ansible_check_mode }}"
   ansible.builtin.apt:
     pkg:
       - postgresql
+      - python3-psycopg2
     update_cache: yes
 
 - name: "db: postgresql | change listen address"
@@ -38,9 +39,25 @@
   with_items: "{{ postgresql_permitted_ip_addresses }}"
 
 - name: "db: postgresql | start service"
-  become: yes
+  become: true
   ignore_errors: "{{ ansible_check_mode }}"
-  systemd:
+  ansible.builtin.systemd:
     name: postgresql
-    enabled: yes
+    enabled: true
     state: started
+
+- name: "db: postgresql | create database"
+  become: true
+  become_user: postgres
+  ignore_errors: "{{ ansible_check_mode }}"
+  community.postgresql.postgresql_db:
+    encoding: UTF-8
+    lc_collate: ja_JP.UTF-8
+    lc_ctype: ja_JP.UTF-8
+    login_user: postgres
+    login_password: postgres
+    login_host: 127.0.0.1
+    # login_unix_socket: /run/postgresql/
+    name: meeting-setup
+    owner: postgres
+    state: present
