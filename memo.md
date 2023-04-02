@@ -6,7 +6,7 @@
   - `listen_addresses = '*'` へ変更する。
 
 - `/etc/postgresql/14/main/pg_hba.conf`
-  - 以下の設定箇所の下へ、`host all all <接続を許可する接続元のCIDR表記>` を追加する。
+  - 以下の設定箇所の下へ、`host all all <接続を許可する接続元のCIDR表記> trust` を追加する。
 
     ```
     # IPv4 local connections:

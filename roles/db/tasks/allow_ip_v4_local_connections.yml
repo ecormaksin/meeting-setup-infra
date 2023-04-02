@@ -4,6 +4,6 @@
     ignore_errors: "{{ ansible_check_mode }}"
     ansible.builtin.lineinfile:
       path: "{{ pg_hba_conf_path }}"
-      regexp: '^host\s+all\s+all\s+{{ target_ip_address | regex_replace("\.", "\.") }}/32\s+trust$'
+      regexp: '^host\s+all\s+all\s+{{ target_ip_address | regex_replace("\.", "\.") }}\s+trust$'
       insertafter: '^(host\s+all\s+all\s+127\.0\.0\.1/32\s+scram-sha-256)$'
-      line: 'host    all    all    {{ target_ip_address }}/32    trust'
+      line: 'host    all    all    {{ target_ip_address }}    trust'
