@@ -1,0 +1,11 @@
+all:
+  hosts:
+  children:
+    webservers:
+      hosts:
+        web-01:
+    dbservers:
+      hosts:
+        db-01:
+  vars:
+    app_db_name: meeting-setup

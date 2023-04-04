@@ -7,12 +7,20 @@
     destination_port: postgresql
     jump: ACCEPT
 
+- name: "db: iptables | save"
+  become: true
+  ignore_errors: "{{ ansible_check_mode }}"
+  community.general.iptables_state:
+    state: saved
+    path: /etc/sysconfig/iptables
+
 - name: "db: postgresql | install packages"
   become: true
   ignore_errors: "{{ ansible_check_mode }}"
   ansible.builtin.apt:
     pkg:
       - postgresql
+      - python-is-python3
       - python3-psycopg2
     update_cache: yes
 
@@ -46,8 +54,7 @@
   ignore_errors: "{{ ansible_check_mode }}"
   community.postgresql.postgresql_user:
     comment: "admin user for meeting-setup"
-    conn_limit: 1
-    login_host: "{{ postgresql_login_host }}"
+    login_host: "{{ ansible_host }}"
     login_password: "{{ postgresql_login_password }}"
     login_user: "{{ postgresql_login_user }}"
     name: "{{ app_db_admin_user_name }}"
@@ -60,8 +67,7 @@
   ignore_errors: "{{ ansible_check_mode }}"
   community.postgresql.postgresql_user:
     comment: "admin user for meeting-setup"
-    conn_limit: 1
-    login_host: "{{ postgresql_login_host }}"
+    login_host: "{{ ansible_host }}"
     login_password: "{{ postgresql_login_password }}"
     login_user: "{{ postgresql_login_user }}"
     name: "{{ app_db_app_user_name }}"
@@ -78,7 +84,34 @@
     lc_ctype: ja_JP.UTF-8
     login_user: "{{ postgresql_login_user }}"
     login_password: "{{ postgresql_login_password }}"
-    login_host: "{{ postgresql_login_host }}"
-    name: meeting-setup
+    login_host: "{{ ansible_host }}"
+    name: "{{ app_db_name }}"
     owner: "{{ app_db_admin_user_name }}"
     state: present
+
+- name: "db: postgresql | create schemas"
+  become: true
+  become_user: "{{ postgresql_login_user }}"
+  ignore_errors: "{{ ansible_check_mode }}"
+  community.postgresql.postgresql_schema:
+    database: "{{ app_db_name }}"
+    login_host: "{{ ansible_host }}"
+    login_password: "{{ app_db_admin_password }}"
+    login_user: "{{ app_db_admin_user_name }}"
+    name: "{{ item }}"
+  loop:
+    - "主催者"
+    - "ミーティング"
+    - "日程候補"
+    - "参加者"
+    - "出欠"
+
+# - name: "db: postgresql | grant app user"
+#   become: true
+#   become_user: "{{ postgresql_login_user }}"
+#   ignore_errors: "{{ ansible_check_mode }}"
+#   community.postgresql.postgresql_privs:
+#     login_db: "{{ app_db_name }}"
+#     login_host: "{{ ansible_host }}"
+#     login_password: "{{ postgresql_login_password }}"
+#     login_user: "{{ postgresql_login_user }}"
