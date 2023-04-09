@@ -94,24 +94,25 @@
   become_user: "{{ postgresql_login_user }}"
   ignore_errors: "{{ ansible_check_mode }}"
   community.postgresql.postgresql_schema:
-    database: "{{ app_db_name }}"
     login_host: "{{ ansible_host }}"
-    login_password: "{{ app_db_admin_password }}"
+    database: "{{ app_db_name }}"
     login_user: "{{ app_db_admin_user_name }}"
+    login_password: "{{ app_db_admin_password }}"
     name: "{{ item }}"
-  loop:
-    - "主催者"
-    - "ミーティング"
-    - "日程候補"
-    - "参加者"
-    - "出欠"
+  loop: "{{ app_db_schemas }}"
 
-# - name: "db: postgresql | grant app user"
-#   become: true
-#   become_user: "{{ postgresql_login_user }}"
-#   ignore_errors: "{{ ansible_check_mode }}"
-#   community.postgresql.postgresql_privs:
-#     login_db: "{{ app_db_name }}"
-#     login_host: "{{ ansible_host }}"
-#     login_password: "{{ postgresql_login_password }}"
-#     login_user: "{{ postgresql_login_user }}"
+- name: "db: postgresql | grant app user for table"
+  become: true
+  become_user: "{{ postgresql_login_user }}"
+  ignore_errors: "{{ ansible_check_mode }}"
+  community.postgresql.postgresql_privs:
+    login_host: "{{ ansible_host }}"
+    login_db: "{{ app_db_name }}"
+    login_user: "{{ app_db_admin_user_name }}"
+    login_password: "{{ app_db_admin_password }}"
+    objs: ALL_IN_SCHEMA
+    privs: INSERT,SELECT,UPDATE,DELETE
+    roles: "{{ app_db_app_user_name }}"
+    schema: "{{ item }}"
+    type: table
+  loop: "{{ app_db_schemas }}"

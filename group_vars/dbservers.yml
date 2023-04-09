@@ -1,2 +1,9 @@
 postgresql_conf_path: /etc/postgresql/14/main/postgresql.conf
 pg_hba_conf_path: /etc/postgresql/14/main/pg_hba.conf
+app_db_name: meeting-setup
+app_db_schemas:
+  - "主催者"
+  - "ミーティング"
+  - "日程候補"
+  - "参加者"
+  - "出欠"
