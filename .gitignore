@@ -3,3 +3,4 @@ host_vars/web-01.yml
 control-node.yml
 work.txt
 temp_tasks.yml
+roles/db/files/schema.sql

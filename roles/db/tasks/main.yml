@@ -89,30 +89,46 @@
     owner: "{{ app_db_admin_user_name }}"
     state: present
 
-- name: "db: postgresql | create schemas"
+- name: "db: postgresql | copy ddl"
   become: true
-  become_user: "{{ postgresql_login_user }}"
   ignore_errors: "{{ ansible_check_mode }}"
-  community.postgresql.postgresql_schema:
-    login_host: "{{ ansible_host }}"
-    database: "{{ app_db_name }}"
-    login_user: "{{ app_db_admin_user_name }}"
-    login_password: "{{ app_db_admin_password }}"
-    name: "{{ item }}"
-  loop: "{{ app_db_schemas }}"
+  ansible.builtin.copy:
+    dest: /tmp/schema.sql
+    mode: 666
+    src: schema.sql
 
-- name: "db: postgresql | grant app user for table"
+- name: "db: postgresql | execute ddl"
   become: true
   become_user: "{{ postgresql_login_user }}"
   ignore_errors: "{{ ansible_check_mode }}"
-  community.postgresql.postgresql_privs:
-    login_host: "{{ ansible_host }}"
-    login_db: "{{ app_db_name }}"
-    login_user: "{{ app_db_admin_user_name }}"
-    login_password: "{{ app_db_admin_password }}"
-    objs: ALL_IN_SCHEMA
-    privs: INSERT,SELECT,UPDATE,DELETE
-    roles: "{{ app_db_app_user_name }}"
-    schema: "{{ item }}"
-    type: table
-  loop: "{{ app_db_schemas }}"
+  ansible.builtin.shell:
+    chdir: /tmp
+    cmd: "psql --dbname={{ app_db_name }} --file=schema.sql --host={{ ansible_host }} --username={{ app_db_admin_user_name }}"
+
+# - name: "db: postgresql | create schemas"
+#   become: true
+#   become_user: "{{ postgresql_login_user }}"
+#   ignore_errors: "{{ ansible_check_mode }}"
+#   community.postgresql.postgresql_schema:
+#     login_host: "{{ ansible_host }}"
+#     database: "{{ app_db_name }}"
+#     login_user: "{{ app_db_admin_user_name }}"
+#     login_password: "{{ app_db_admin_password }}"
+#     name: "{{ item }}"
+#   loop: "{{ app_db_schemas }}"
+
+# - name: "db: postgresql | grant app user for table"
+#   become: true
+#   become_user: "{{ postgresql_login_user }}"
+#   ignore_errors: "{{ ansible_check_mode }}"
+#   community.postgresql.postgresql_privs:
+#     login_host: "{{ ansible_host }}"
+#     login_db: "{{ app_db_name }}"
+#     login_user: "{{ app_db_admin_user_name }}"
+#     login_password: "{{ app_db_admin_password }}"
+#     objs: ALL_IN_SCHEMA
+#     privs: INSERT,SELECT,UPDATE,DELETE
+#     roles: "{{ app_db_app_user_name }}"
+#     schema: "{{ item }}"
+#     type: table
+#   loop: "{{ app_db_schemas }}"
