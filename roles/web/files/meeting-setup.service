@@ -1,0 +1,18 @@
+[Unit]
+Description=Web app to organize schedules for meetings
+After=syslog.target
+After=network.target[Service]
+User=spring
+Type=simple
+ConditionPathExists=/opt/meeting-setup
+ 
+[Service]
+ExecStart=/opt/meeting-setup/start_app.sh
+Restart=always
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=meeting-setup
+SuccessExitStatus=143
+ 
+[Install] 
+WantedBy=multi-user.target
