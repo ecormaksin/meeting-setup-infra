@@ -73,4 +73,102 @@
 - name: "web: cerbot | Get and install certificates"
   become: true
   ignore_errors: "{{ ansible_check_mode }}"
-  ansible.builtin.shell: certbot --nginx --noninteractive --agree-tos -m "{{ certbot_email_address }}" -d "{{ certbot_domain }}"
+  ansible.builtin.shell: certbot --nginx --noninteractive --agree-tos -m "{{ certbot_email_address }}" -d "{{ web_server_domain }}"
+
+- name: "web: java | install packages"
+  become: true
+  ignore_errors: "{{ ansible_check_mode }}"
+  ansible.builtin.apt:
+    pkg:
+      - openjdk-17-jdk
+    update_cache: yes
+
+- name: "web: java | create user for web app"
+  become: true
+  ignore_errors: "{{ ansible_check_mode }}"
+  ansible.builtin.user:
+    name: "{{ web_app_user }}"
+    comment: "web app user"
+    create_home: false
+
+- name: "web: app | create base directory"
+  become: true
+  ignore_errors: "{{ ansible_check_mode }}"
+  ansible.builtin.file:
+    path: "{{ web_app_base_directory }}"
+    state: directory
+    owner: "{{ web_app_user }}"
+    group: "{{ web_app_user }}"
+    mode: '0755'
+
+- name: "web: app | copy files for app"
+  become: true
+  ignore_errors: "{{ ansible_check_mode }}"
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: "{{ web_app_base_directory }}/{{ item }}"
+    owner: "{{ web_app_user }}"
+    group: "{{ web_app_user }}"
+    mode: '0755'
+  loop:
+    - meeting-setup.jar
+    - start_app.sh
+
+- name: "web: app | template files for app"
+  become: true
+  ignore_errors: "{{ ansible_check_mode }}"
+  ansible.builtin.template:
+    src: setenv.sh.j2
+    dest: "{{ web_app_base_directory }}/setenv.sh"
+    owner: "{{ web_app_user }}"
+    group: "{{ web_app_user }}"
+    mode: '0755'
+
+- name: "web: system | set systemd service file for web app"
+  become: true
+  ignore_errors: "{{ ansible_check_mode }}"
+  ansible.builtin.template:
+    src: meeting-setup.service.j2
+    dest: /etc/systemd/system/meeting-setup.service
+    owner: root
+    group: root
+    mode: '0644'
+  notify:
+    - "web | systemctl reload"
+
+- name: "web: app | start service"
+  become: true
+  ignore_errors: "{{ ansible_check_mode }}"
+  ansible.builtin.systemd:
+    name: meeting-setup.service
+    enabled: true
+    state: started
+
+- name: "web: nginx | set configuration file for web app"
+  become: true
+  ignore_errors: "{{ ansible_check_mode }}"
+  ansible.builtin.template:
+    src: meeting-setup.conf.j2
+    dest: /etc/nginx/sites-available/meeting-setup.conf
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: "web: nginx | enable web app configuration"
+  become: true
+  ignore_errors: "{{ ansible_check_mode }}"
+  ansible.builtin.file:
+    src: /etc/nginx/sites-available/meeting-setup.conf
+    dest: /etc/nginx/sites-enabled/meeting-setup.conf
+    state: link
+    force: true
+
+- name: "web: nginx | disable default configuration"
+  become: true
+  ignore_errors: true
+  ansible.builtin.file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+    force: true
+  notify:
+    - "web: nginx | restart service"

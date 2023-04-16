@@ -1,13 +1,11 @@
 [Unit]
 Description=Web app to organize schedules for meetings
 After=syslog.target
-After=network.target[Service]
-User=spring
-Type=simple
-ConditionPathExists=/opt/meeting-setup
+ConditionPathExists={{ web_app_base_directory }}
  
 [Service]
-ExecStart=/opt/meeting-setup/start_app.sh
+User={{ web_app_user }}
+ExecStart={{ web_app_base_directory }}/start_app.sh
 Restart=always
 StandardOutput=syslog
 StandardError=syslog

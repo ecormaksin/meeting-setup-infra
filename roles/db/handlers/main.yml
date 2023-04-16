@@ -1,0 +1,9 @@
+- name: "db: postgresql | restart service"
+  become: true
+  ignore_errors: "{{ ansible_check_mode }}"
+  ansible.builtin.systemd:
+    name:
+      - 'postgresql'
+      - 'postgresql@14-main'
+    enabled: true
+    state: restarted

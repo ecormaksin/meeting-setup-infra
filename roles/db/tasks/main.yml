@@ -41,20 +41,22 @@
     regexp: '^local(\s+)all(\s+)(postgres|all)(\s+)peer$'
     replace: 'local\1all\2\3\4trust'
 
+- name: "db: postgresql | allow host trust connection"
+  become: true
+  ignore_errors: "{{ ansible_check_mode }}"
+  ansible.builtin.replace:
+    path: "{{ pg_hba_conf_path }}"
+    regexp: '^(host\s+all\s+postgres\s+127\.0\.0\.1/32\s+)ident$'
+    replace: '\1trust'
+
 - name: "db: postgresql | allow ip v4 local connections"
   ansible.builtin.include_tasks:
     file: ./roles/db/tasks/allow_ip_v4_local_connections.yml
   vars:
     target_ip_address: "{{ item }}"
   with_items: "{{ postgresql_permitted_ip_addresses }}"
-
-- name: "db: postgresql | start service"
-  become: true
-  ignore_errors: "{{ ansible_check_mode }}"
-  ansible.builtin.systemd:
-    name: postgresql
-    enabled: true
-    state: started
+  notify:
+    - "db: postgresql | restart service"
 
 - name: "db: postgresql | create app admin user"
   become: true
@@ -62,7 +64,7 @@
   ignore_errors: "{{ ansible_check_mode }}"
   community.postgresql.postgresql_user:
     comment: "admin user for meeting-setup"
-    login_host: "{{ ansible_host }}"
+    login_host: "{{ postgresql_ip_addresses }}"
     login_password: "{{ postgresql_login_password }}"
     login_user: "{{ postgresql_login_user }}"
     name: "{{ app_db_admin_user_name }}"
@@ -75,7 +77,7 @@
   ignore_errors: "{{ ansible_check_mode }}"
   community.postgresql.postgresql_user:
     comment: "app user for meeting-setup"
-    login_host: "{{ ansible_host }}"
+    login_host: "{{ postgresql_ip_addresses }}"
     login_user: "{{ postgresql_login_user }}"
     login_password: "{{ postgresql_login_password }}"
     name: "{{ app_db_app_user_name }}"
@@ -87,7 +89,7 @@
   become_user: "{{ postgresql_login_user }}"
   ignore_errors: "{{ ansible_check_mode }}"
   community.postgresql.postgresql_db:
-    login_host: "{{ ansible_host }}"
+    login_host: "{{ postgresql_ip_addresses }}"
     login_user: "{{ postgresql_login_user }}"
     login_password: "{{ postgresql_login_password }}"
     name: "{{ app_db_name }}"
@@ -129,14 +131,14 @@
   ignore_errors: "{{ ansible_check_mode }}"
   ansible.builtin.shell:
     chdir: /tmp
-    cmd: "psql --dbname={{ app_db_name }} --file=schema.sql --host={{ ansible_host }} --username={{ app_db_admin_user_name }}"
+    cmd: "psql --dbname={{ app_db_name }} --file=schema.sql --host={{ postgresql_ip_addresses }} --username={{ app_db_admin_user_name }}"
 
 - name: "db: postgresql | grant app user for schema"
   become: true
   become_user: "{{ postgresql_login_user }}"
   ignore_errors: "{{ ansible_check_mode }}"
   community.postgresql.postgresql_privs:
-    login_host: "{{ ansible_host }}"
+    login_host: "{{ postgresql_ip_addresses }}"
     login_db: "{{ app_db_name }}"
     login_user: "{{ app_db_admin_user_name }}"
     login_password: "{{ app_db_admin_password }}"
@@ -151,7 +153,7 @@
   become_user: "{{ postgresql_login_user }}"
   ignore_errors: "{{ ansible_check_mode }}"
   community.postgresql.postgresql_privs:
-    login_host: "{{ ansible_host }}"
+    login_host: "{{ postgresql_ip_addresses }}"
     login_db: "{{ app_db_name }}"
     login_user: "{{ app_db_admin_user_name }}"
     login_password: "{{ app_db_admin_password }}"
@@ -167,7 +169,7 @@
   become_user: "{{ postgresql_login_user }}"
   ignore_errors: "{{ ansible_check_mode }}"
   community.postgresql.postgresql_privs:
-    login_host: "{{ ansible_host }}"
+    login_host: "{{ postgresql_ip_addresses }}"
     login_db: "{{ app_db_name }}"
     login_user: "{{ app_db_admin_user_name }}"
     login_password: "{{ app_db_admin_password }}"
@@ -185,7 +187,7 @@
   become_user: "{{ postgresql_login_user }}"
   ignore_errors: "{{ ansible_check_mode }}"
   community.postgresql.postgresql_privs:
-    login_host: "{{ ansible_host }}"
+    login_host: "{{ postgresql_ip_addresses }}"
     login_db: "{{ app_db_name }}"
     login_user: "{{ app_db_admin_user_name }}"
     login_password: "{{ app_db_admin_password }}"

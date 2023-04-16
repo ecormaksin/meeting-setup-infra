@@ -7,3 +7,5 @@ all:
     dbservers:
       hosts:
         db-01:
+  vars:
+    app_db_name: meeting-setup

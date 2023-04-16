@@ -1,0 +1,5 @@
+#!/bin/sh
+
+export SPRING_DATASOURCE_URL=jdbc:log4jdbc:postgresql://{{ db_server_ip_address }}:5432/{{ app_db_name }}
+export SPRING_DATASOURCE_USERNAME={{ app_db_app_user_name }}
+export SPRING_DATASOURCE_PASSWORD={{ app_db_app_password }}
