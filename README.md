@@ -5,8 +5,10 @@ Ubuntu上に構築する想定でansible-playbookを使います。
 ## 使い方
 
 - 接続先サーバーでSSH公開鍵認証接続を可能にしておきます。
+
 - 以下のファイルをコピー＆リネームし、環境に応じて値を変更します。
   - control-node.dist.yml -> control-node.yml
+  - group_vars/webservers.dist.yml -> group_vars/webservers.yml
   - host_vars/web-01.dist.yml -> host_vars/web-01.yml
   - host_vars/db-01.dist.yml -> host_vars/db-01.yml
 
