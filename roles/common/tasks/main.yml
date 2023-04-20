@@ -94,6 +94,8 @@
     pkg:
       - tmux
       - xsel
+      - iptables
+      - iptables-persistent
     update_cache: yes
 
 - name: "common: tmux | copy setting file"

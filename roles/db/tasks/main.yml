@@ -55,8 +55,16 @@
   vars:
     target_ip_address: "{{ item }}"
   with_items: "{{ postgresql_permitted_ip_addresses }}"
-  notify:
-    - "db: postgresql | restart service"
+
+- name: "db: postgresql | start service"
+  become: true
+  ignore_errors: "{{ ansible_check_mode }}"
+  ansible.builtin.systemd:
+    name:
+      - 'postgresql'
+      - 'postgresql@14-main'
+    enabled: true
+    state: started
 
 - name: "db: postgresql | create app admin user"
   become: true
