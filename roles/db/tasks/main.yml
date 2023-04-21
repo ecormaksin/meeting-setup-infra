@@ -60,11 +60,12 @@
   become: true
   ignore_errors: "{{ ansible_check_mode }}"
   ansible.builtin.systemd:
-    name:
-      - 'postgresql'
-      - 'postgresql@14-main'
+    name: "{{ item }}"
     enabled: true
     state: started
+  with_items:
+    - 'postgresql'
+    - 'postgresql@14-main'
 
 - name: "db: postgresql | create app admin user"
   become: true
